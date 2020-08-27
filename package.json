@@ -1,0 +1,32 @@
+{
+  "name": "school-bot",
+  "version": "1.0.0",
+  "description": "FB Messenger Bot to keep you accountable",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "messenger",
+    "facebook",
+    "fb",
+    "hackathon",
+    "wit.ai",
+    "ai",
+    "nlp",
+    "google",
+    "hackathon",
+    "learning",
+    "ai",
+    "artificial",
+    "intelligence",
+    "lifehack"
+  ],
+  "author": "Aditi,Piyush,Sara",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "request": "^2.88.2"
+  }
+}
