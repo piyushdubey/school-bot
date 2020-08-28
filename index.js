@@ -127,7 +127,7 @@ app.post('/webhook/', function (req, res) {
 	const data = req.body;
 
 	if (data.object === 'page') {
-		data.entry.forEach(entry => {
+		data.entry.forEach(event => {
 			if (event.message && !event.message.is_echo) {
 				// We got a new message!
 
