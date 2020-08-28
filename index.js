@@ -5,6 +5,7 @@ const bodyParser = require('body-parser')
 const request = require('request')
 const fetch = require('node-fetch')
 const {Wit,log} = require('node-wit')
+const crypto = require('crypto')
 
 // Webserver parameters
 const PORT = process.env.PORT || 8445;
