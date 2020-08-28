@@ -26,7 +26,10 @@
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.19.0",
+    "crypto": "^1.0.1",
     "express": "^4.17.1",
+    "node-fetch": "^2.6.0",
+    "node-wit": "^6.0.0",
     "request": "^2.88.2"
   }
 }
