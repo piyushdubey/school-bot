@@ -2,7 +2,7 @@
 FB Messenger created with Wit.ai
 
 ## Webhook URL
-https://secure-bastion-02755.herokuapp.com/webhook/
+https://getschoolbot.herokuapp.com/webhook/
 
 ## Test Webhook and FB connection
 
