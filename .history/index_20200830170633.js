@@ -155,13 +155,10 @@ app.post('/webhook/', function (req, res) {
 						switch(intent.value){
 							case 'get_priority':
 								console.log('Upcoming top items are...');
-								fbMessage(sender, 'Upcoming top items are...');
 							case 'track_progress':
 								console.log('Your time has been logged. The remaining time for this project is ...');
-								fbMessage(sender, 'Your time has been logged. The remaining time for this project is ...');
 							default:
 								console.log("How's your day?");
-								fbMessage(sender, "How's your day?");
 								break;
 						}
 
