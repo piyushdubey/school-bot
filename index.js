@@ -131,7 +131,8 @@ app.post('/webhook/', function (req, res) {
 		data.entry.forEach(event => {
 			if (event.message && !event.message.is_echo) {
 				// We got a new message!
-				fbMessage(sender, "HELLO");
+				console.log("Sender " + sender + " says hello!");
+				fbMessage(sender, "hi there!");
 
 				// Retrieve Facebook user ID of the sender
 				const sender = event.sender.id;
@@ -142,19 +143,20 @@ app.post('/webhook/', function (req, res) {
 
 				// Retrieve the message content
 				const {text, attachments} = event.message;
-
+				console.log("TEXT : : : : " + text);
 				if (attachments) {
 					fbMessage(sender, 'Sorry, I can\'t process this message, please type your message!')
 					.catch(console.error);
 				} else if (text) {
 					// We received a text message
 					// Extract entities, intents, and traits
-
+					console.log("TEXT!!! " + text);
 					wit.message(text).then(({entities, intents, traits}) => {
 						console.log("entities: " + entities);
 						console.log("intents: " + intents);
 						console.log("traits: " + traits);
 
+console.log("Gonna try and send a message");
 						// Reply with a dummy message for now
 						fbMessage(sender, "We've received your message");
 					})
