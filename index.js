@@ -125,13 +125,14 @@ app.post('/webhook/', function (req, res) {
 
 	// Parse the Messenger Payload
 	const data = req.body;
-
+	console.log("data " + data);
+	
 	if (data.object === 'page') {
 		data.entry.forEach(event => {
 			if (event.message && !event.message.is_echo) {
 				// We got a new message!
 				fbMessage(sender, "HELLO");
-				
+
 				// Retrieve Facebook user ID of the sender
 				const sender = event.sender.id;
 
