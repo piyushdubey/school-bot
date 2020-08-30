@@ -136,9 +136,6 @@ app.post('/webhook/', function (req, res) {
 					// Retrieve Facebook user ID of the sender
 					const sender = event.sender.id;
 
-					// We got a new message!
-					fbMessage(sender, "hi there!");
-
 					// We could retrieve the user's current session, or create one if it doesn't exist
 					// This is useful is we want the bot to figure out the conversation history
 					const sessionId = findOrCreateSession(sender);
