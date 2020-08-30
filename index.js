@@ -125,8 +125,8 @@ app.post('/webhook/', function (req, res) {
 
 	// Parse the Messenger Payload
 	const data = req.body;
-	console.log("data " + data);
-	
+	console.log("data " + JSON.stringify(data));
+
 	if (data.object === 'page') {
 		data.entry.forEach(event => {
 			if (event.message && !event.message.is_echo) {
