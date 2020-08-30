@@ -31,5 +31,6 @@
     "node-fetch": "^2.6.0",
     "node-wit": "^6.0.0",
     "request": "^2.88.2"
-  }
+  },
+  "devDependencies": {}
 }
