@@ -138,7 +138,7 @@ app.post('/webhook/', function (req, res) {
 
 					// We could retrieve the user's current session, or create one if it doesn't exist
 					// This is useful is we want the bot to figure out the conversation history
-					const sessionId = findOrCreateSession(sender);
+			//		const sessionId = findOrCreateSession(sender);
 
 					// Retrieve the message content
 					const {text, attachments} = event.message;
