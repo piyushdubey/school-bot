@@ -127,11 +127,10 @@ app.post('/webhook/', function (req, res) {
 	const data = req.body;
 	const t = data.object === 'page';
 	const s = data.object == 'page';
-	console.log("t " + t + " s " + s);
 
 	if (data.object === 'page') {
 		data.entry.forEach(event => {
-			if (event.message && !event.message.is_echo) {
+			if (event.message /* && !event.message.is_echo */) {
 				// We got a new message!
 				console.log("Sender " + sender + " says hello!");
 				fbMessage(sender, "hi there!");
