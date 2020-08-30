@@ -36,18 +36,16 @@ crypto.randomBytes(8, (err, buff) => {
 // Messenger API specific code
 
 // TODO: Refer Send API reference on developers.facebook.com
-
 const fbMessage = (id, text) => {
 	const body = JSON.stringify({
 		recipient: { id },
 		message: { text },
 	});
-
 	const qs = 'access_token=' + encodeURIComponent(FB_PAGE_ACCESS_TOKEN);
 	return fetch('https://graph.facebook.com/me/messages?' + qs, {
 		method: 'POST',
-		header: {'Content-Type': 'application/json'},
-		body
+		headers: {'Content-Type': 'application/json'},
+		body,
 	})
 	.then(response => response.json())
 	.then(json => {
@@ -56,7 +54,7 @@ const fbMessage = (id, text) => {
 		}
 		return json;
 	});
-}
+};
 
 // ---------------------------------------------------
 // Wit.ai bot specific code
