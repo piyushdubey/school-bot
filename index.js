@@ -103,7 +103,7 @@ app.use(({method, url}, rsp, next) => {
 	next();
 });
 
-app.use(bodyParser.json({ verify: verifyRequestSignature }))
+app.use(bodyParser.json({ verify: verifyRequestSignature }));
 
 // Index route
 app.get('/', (req, res) => {
@@ -118,7 +118,7 @@ app.get('/webhook/', (req, res) => {
 		res.send(req.query['hub.challenge']);
 	}
 	res.send('Error, wrong token')
-})
+});
 
 // Message handler
 app.post('/webhook/', function (req, res) {
@@ -130,7 +130,8 @@ app.post('/webhook/', function (req, res) {
 		data.entry.forEach(event => {
 			if (event.message && !event.message.is_echo) {
 				// We got a new message!
-
+				fbMessage(sender, "HELLO");
+				
 				// Retrieve Facebook user ID of the sender
 				const sender = event.sender.id;
 
@@ -154,7 +155,7 @@ app.post('/webhook/', function (req, res) {
 						console.log("traits: " + traits);
 
 						// Reply with a dummy message for now
-						fbMessage(sender, `We've received your message: ${text}.`);
+						fbMessage(sender, "We've received your message");
 					})
 					.catch((err) => {
 						console.error('Got an error from Wit!: ', err.stack || err);
