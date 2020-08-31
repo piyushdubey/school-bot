@@ -126,6 +126,8 @@ app.post('/webhook/', function (req, res) {
 	const t = data.object === 'page';
 	const s = data.object == 'page';
 
+	console.log(JSON.stringify(data));
+	
 	if (data.object === 'page') {
 		data.entry.forEach(entry => {
 			entry.messaging.forEach(event => {
