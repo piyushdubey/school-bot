@@ -128,41 +128,43 @@ app.post('/webhook/', function (req, res) {
 
 	if (data.object === 'page') {
 		data.entry.forEach(entry => {
-			if (event.message && !event.message.is_echo) {
-				// We got a new message!
+			entry.messaging.forEach(event => {
 
-				// Retrieve Facebook user ID of the sender
-				const sender = event.sender.id;
+				// Process message payload
+				if (event.message && !event.message.is_echo) {
 
-				// We could retrieve the user's current session, or create one if it doesn't exist
-				// This is useful is we want the bot to figure out the conversation history
-				const sessionId = findOrCreateSession(sender);
+					// Retrieve Facebook user ID of the sender
+					const sender = event.sender.id;
 
-				// Retrieve the message content
-				const {text, attachments} = event.message;
+					// We could retrieve the user's current session, or create one if it doesn't exist
+					// This is useful is we want the bot to figure out the conversation history
+			//		const sessionId = findOrCreateSession(sender);
 
-				if (attachments) {
-					fbMessage(sender, 'Sorry, I can\'t process this message, please type your message!')
-					.catch(console.error);
-				} else if (text) {
-					// We received a text message
-					// Extract entities, intents, and traits
+					// Retrieve the message content
+					const {text, attachments} = event.message;
 
-					wit.message(text).then(({entities, intents, traits}) => {
-						console.log("entities: " + entities);
-						console.log("intents: " + intents);
-						console.log("traits: " + traits);
+					if (attachments) {
+						fbMessage(sender, 'Sorry, I can\'t process this message, please type your message!')
+						.catch(console.error);
+					} else if (text) {
+						// We received a text message
+						// Extract entities, intents, and traits
+						wit.message(text).then(({entities, intents, traits}) => {
+							console.log("entities: " + entities);
+							console.log("intents: " + intents);
+							console.log("traits: " + traits);
 
-						// Reply with a dummy message for now
-						fbMessage(sender, `We've received your message: ${text}.`);
-					})
-					.catch((err) => {
-						console.error('Got an error from Wit!: ', err.stack || err);
-					});
-				} else {
-					console.log('received event', JSON.stringify(event));
+							// Reply with a dummy message for now
+							fbMessage(sender, "We've received your message");
+						})
+						.catch((err) => {
+							console.error('Got an error from Wit!: ', err.stack || err);
+						});
+					} else {
+						console.log('received event', JSON.stringify(event));
+					}
 				}
-			};
+			});
 		});
 		res.sendStatus(200);
 	}
