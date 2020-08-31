@@ -149,23 +149,6 @@ app.post('/webhook/', function (req, res) {
 					// Extract entities, intents, and traits
 
 					wit.message(text).then(({entities, intents, traits}) => {
-						if(!intent){
-							console.log('Can you repeat again?')
-							return;
-						} 
-						switch(intent.value){
-							case 'get_priority':
-								console.log('Upcoming top items are...');
-								fbMessage(sender, 'Upcoming top items are...');
-							case 'track_progress':
-								console.log('Your time has been logged. The remaining time for this project is ...');
-								fbMessage(sender, 'Your time has been logged. The remaining time for this project is ...');
-							default:
-								console.log("How's your day?");
-								fbMessage(sender, "How's your day?");
-								break;
-						}
-
 						console.log("entities: " + entities);
 						console.log("intents: " + intents);
 						console.log("traits: " + traits);
