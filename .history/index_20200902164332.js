@@ -107,7 +107,7 @@ app.post('/webhook/', function (req, res) {
 
 					// Retrieve the message content
 					const {text, attachments} = event.message;
-					wit.client(text);
+					witModule.client(text);
 
 					if (attachments) {
 						fbMessage(sender, 'Sorry, I can\'t process this message, please type your message!')
