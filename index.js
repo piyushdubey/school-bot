@@ -14,8 +14,8 @@ const PORT = process.env.PORT || 8445;
 const WIT_TOKEN = process.env.WIT_TOKEN;
 
 // Messenger API parameters
-const FB_PAGE_ACCESS_TOKEN = process.env.FB_PAGE_ACCESS_TOKEN;
-if (!FB_PAGE_ACCESS_TOKEN) { throw new Error('missing FB_PAGE_ACCESS_TOKEN') }
+const FB_PAGE_TOKEN = process.env.FB_PAGE_TOKEN;
+if (!FB_PAGE_TOKEN) { throw new Error('missing FB_PAGE_TOKEN') }
 
 const FB_APP_SECRET = process.env.FB_APP_SECRET;
 if (!FB_APP_SECRET) { throw new Error('missing FB_APP_SECRET') }
@@ -36,18 +36,16 @@ crypto.randomBytes(8, (err, buff) => {
 // Messenger API specific code
 
 // TODO: Refer Send API reference on developers.facebook.com
-
 const fbMessage = (id, text) => {
 	const body = JSON.stringify({
 		recipient: { id },
 		message: { text },
 	});
-
-	const qs = 'access_token=' + encodeURIComponent(FB_PAGE_ACCESS_TOKEN);
+	const qs = 'access_token=' + encodeURIComponent(FB_PAGE_TOKEN);
 	return fetch('https://graph.facebook.com/me/messages?' + qs, {
 		method: 'POST',
-		header: {'Content-Type': 'application/json'},
-		body
+		headers: {'Content-Type': 'application/json'},
+		body,
 	})
 	.then(response => response.json())
 	.then(json => {
@@ -56,7 +54,7 @@ const fbMessage = (id, text) => {
 		}
 		return json;
 	});
-}
+};
 
 // ---------------------------------------------------
 // Wit.ai bot specific code
@@ -103,7 +101,7 @@ app.use(({method, url}, rsp, next) => {
 	next();
 });
 
-app.use(bodyParser.json({ verify: verifyRequestSignature }))
+app.use(bodyParser.json({ verify: verifyRequestSignature }));
 
 // Index route
 app.get('/', (req, res) => {
@@ -118,51 +116,57 @@ app.get('/webhook/', (req, res) => {
 		res.send(req.query['hub.challenge']);
 	}
 	res.send('Error, wrong token')
-})
+});
 
 // Message handler
 app.post('/webhook/', function (req, res) {
 
 	// Parse the Messenger Payload
 	const data = req.body;
+	const t = data.object === 'page';
+	const s = data.object == 'page';
 
+	console.log(JSON.stringify(data));
+	
 	if (data.object === 'page') {
-		data.entry.forEach(event => {
-			if (event.message && !event.message.is_echo) {
-				// We got a new message!
+		data.entry.forEach(entry => {
+			entry.messaging.forEach(event => {
 
-				// Retrieve Facebook user ID of the sender
-				const sender = event.sender.id;
+				// Process message payload
+				if (event.message && !event.message.is_echo) {
 
-				// We could retrieve the user's current session, or create one if it doesn't exist
-				// This is useful is we want the bot to figure out the conversation history
-				const sessionId = findOrCreateSession(sender);
+					// Retrieve Facebook user ID of the sender
+					const sender = event.sender.id;
 
-				// Retrieve the message content
-				const {text, attachments} = event.message;
+					// We could retrieve the user's current session, or create one if it doesn't exist
+					// This is useful is we want the bot to figure out the conversation history
+			//		const sessionId = findOrCreateSession(sender);
 
-				if (attachments) {
-					fbMessage(sender, 'Sorry, I can\'t process this message, please type your message!')
-					.catch(console.error);
-				} else if (text) {
-					// We received a text message
-					// Extract entities, intents, and traits
+					// Retrieve the message content
+					const {text, attachments} = event.message;
 
-					wit.message(text).then(({entities, intents, traits}) => {
-						console.log("entities: " + entities);
-						console.log("intents: " + intents);
-						console.log("traits: " + traits);
+					if (attachments) {
+						fbMessage(sender, 'Sorry, I can\'t process this message, please type your message!')
+						.catch(console.error);
+					} else if (text) {
+						// We received a text message
+						// Extract entities, intents, and traits
+						wit.message(text).then(({entities, intents, traits}) => {
+							console.log("entities: " + entities);
+							console.log("intents: " + intents);
+							console.log("traits: " + traits);
 
-						// Reply with a dummy message for now
-						fbMessage(sender, `We've received your message: ${text}.`);
-					})
-					.catch((err) => {
-						console.error('Got an error from Wit!: ', err.stack || err);
-					});
-				} else {
-					console.log('received event', JSON.stringify(event));
+							// Reply with a dummy message for now
+							fbMessage(sender, "We've received your message");
+						})
+						.catch((err) => {
+							console.error('Got an error from Wit!: ', err.stack || err);
+						});
+					} else {
+						console.log('received event', JSON.stringify(event));
+					}
 				}
-			}
+			});
 		});
 		res.sendStatus(200);
 	}
