@@ -10,8 +10,6 @@ const WIT_TOKEN = process.env.WIT_TOKEN
 // sessionId -> {fbid: facebookUserId, context: sessionState}
 const sessions = {}
 
-
-
 const findOrCreateSession = (fbid) => {
 	let sessionId;
 
@@ -36,12 +34,5 @@ const wit = new Wit({
 	accessToken: WIT_TOKEN,
 	logger: new log.Logger(log.info)
 })
-
-const client = new Wit({accessToken: WIT_TOKEN});
-client.message('what is the weather in London?', {})
-	.then((data) => {
-	console.log('Yay, got Wit.ai response: ' + JSON.stringify(data));
-	})
-	.catch(console.error);
 
 module.exports = { wit }

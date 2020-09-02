@@ -4,15 +4,18 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const request = require('request')
 const fetch = require('node-fetch')
-const wit = require('./wit-client')
+const {Wit,log} = require('node-wit')
 const crypto = require('crypto')
 
 // Webserver parameters
 const PORT = process.env.PORT || 8445;
 
+// Wit.ai parameters
+const WIT_TOKEN = process.env.WIT_TOKEN;
+
 // Messenger API parameters
-const FB_PAGE_TOKEN = process.env.FB_PAGE_TOKEN;
-if (!FB_PAGE_TOKEN) { throw new Error('missing FB_PAGE_TOKEN') }
+const FB_PAGE_ACCESS_TOKEN = process.env.FB_PAGE_ACCESS_TOKEN;
+if (!FB_PAGE_ACCESS_TOKEN) { throw new Error('missing FB_PAGE_ACCESS_TOKEN') }
 
 const FB_APP_SECRET = process.env.FB_APP_SECRET;
 if (!FB_APP_SECRET) { throw new Error('missing FB_APP_SECRET') }
@@ -38,7 +41,7 @@ const fbMessage = (id, text) => {
 		recipient: { id },
 		message: { text },
 	});
-	const qs = 'access_token=' + encodeURIComponent(FB_PAGE_TOKEN);
+	const qs = 'access_token=' + encodeURIComponent(FB_PAGE_ACCESS_TOKEN);
 	return fetch('https://graph.facebook.com/me/messages?' + qs, {
 		method: 'POST',
 		headers: {'Content-Type': 'application/json'},
@@ -54,8 +57,47 @@ const fbMessage = (id, text) => {
 };
 
 // ---------------------------------------------------
+// Wit.ai bot specific code
+
+// This will contain all user sessions.
+// Each session has an entry:
+// sessionId -> {fbid: facebookUserId, context: sessionState}
+const sessions = {};
+
+const findOrCreateSession = (fbid) => {
+	let sessionId;
+
+	// Check if session already exists for user fbid
+	Object.keys(sessions).forEach(k => {
+		if (session[k].fbid === fbid) {
+			sessionId = k;
+		}
+	});
+
+	if (!sessionId) {
+		// No session found for user fbid, let's create one
+		sessionId = new Date().toISOString();
+		sessions[sessionId] = {fbid: fbid, context: {}};
+	}
+	return sessionId;
+};
+
+// Setting up wit.ai bot
+
+const wit = new Wit({
+	accessToken: WIT_TOKEN,
+	logger: new log.Logger(log.info)
+});
+
+// starts an interactive conversation
+
+const {interactive} = require('node-wit');
+interactive(client);
+
 // Setting up the express webserver
 const app = express();
+
+//app.set('port', (process.env.PORT || 5000))
 
 app.use(({method, url}, rsp, next) => {
 	rsp.on('finish', () => {
@@ -94,19 +136,21 @@ app.post('/webhook/', function (req, res) {
 	if (data.object === 'page') {
 		data.entry.forEach(entry => {
 			entry.messaging.forEach(event => {
-
-				// Retrieve Facebook user ID of the sender
-				const sender = event.sender.id;
+				console.log(JSON.stringify(event));
 
 				// Process message payload
 				if (event.message && !event.message.is_echo) {
 
+					// Retrieve Facebook user ID of the sender
+					const sender = event.sender.id;
+
 					// We could retrieve the user's current session, or create one if it doesn't exist
 					// This is useful is we want the bot to figure out the conversation history
-					// const sessionId = findOrCreateSession(sender);
+			//		const sessionId = findOrCreateSession(sender);
 
 					// Retrieve the message content
 					const {text, attachments} = event.message;
+					const {intents, entities, traits} = event.message.nlp;
 
 					if (attachments) {
 						fbMessage(sender, 'Sorry, I can\'t process this message, please type your message!')
@@ -114,26 +158,21 @@ app.post('/webhook/', function (req, res) {
 					} else if (text) {
 						// We received a text message
 						// Extract entities, intents, and traits
-						const { entities, intents, traits } = event.message.nlp; 
-						if (entities) {
-							console.log("entities: " + JSON.stringify(entities));
-						}
+						switch(intents[0]){
+							default:
+								fbMessage(sender, "The intent, we received");
+						} 
+						wit.message(text).then(({entities, intents, traits}) => {
+							console.log("entities: " + entities);
+							console.log("intents: " + intents);
+							console.log("traits: " + traits);
 
-						if (intents) {
-							console.log("intents: " + JSON.stringify(intents));
-							const trueIntent = intents[0]
-							if (trueIntent){
-								fbMessage(sender, "I see you");
-							} else if (trueIntent == nulll){
-								fbMessage(sender, "You have no intent");
-							}
-						}
-
-						if (traits) {
-							console.log("traits: " + JSON.stringify(traits));
-						}
-						// Reply with a dummy message for now
-						fbMessage(sender, "We've received your message!!");
+							// Reply with a dummy message for now
+							fbMessage(sender, "We've received your message");
+						})
+						.catch((err) => {
+							console.error('Got an error from Wit!: ', err.stack || err);
+						});
 					} else {
 						console.log('received event', JSON.stringify(event));
 					}

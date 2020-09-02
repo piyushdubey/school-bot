@@ -37,11 +37,4 @@ const wit = new Wit({
 	logger: new log.Logger(log.info)
 })
 
-const client = new Wit({accessToken: WIT_TOKEN});
-client.message('what is the weather in London?', {})
-	.then((data) => {
-	console.log('Yay, got Wit.ai response: ' + JSON.stringify(data));
-	})
-	.catch(console.error);
-
 module.exports = { wit }
