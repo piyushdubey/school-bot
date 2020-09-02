@@ -1,5 +1,4 @@
 'use strict'
-import * as witModule from 'wit-client.js';
 
 const express = require('express')
 const bodyParser = require('body-parser')
@@ -108,7 +107,7 @@ app.post('/webhook/', function (req, res) {
 
 					// Retrieve the message content
 					const {text, attachments} = event.message;
-					witModule.client(text);
+					client(text);
 
 					if (attachments) {
 						fbMessage(sender, 'Sorry, I can\'t process this message, please type your message!')
