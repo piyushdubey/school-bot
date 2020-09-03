@@ -37,6 +37,15 @@ const wit = new Wit({
 	logger: new log.Logger(log.info)
 })
 
+// Wit message API
+const client = {
+	new Wit({accessToken: WIT_TOKEN});
+	client.message("what is my priority list?", {})
+		.then((data) => {
+		console.log('Yay, got Wit.ai response: ' + JSON.stringify(data));
+		})
+		.catch(console.error);
+} 
 
 // const {interactive} = require('node-wit');
 // interactive(client);
@@ -45,4 +54,4 @@ const wit = new Wit({
 // use the ngrok url for callback url
 
 
-module.exports = { wit } // message 
+module.exports = { wit, client } // message 

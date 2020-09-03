@@ -118,13 +118,6 @@ app.post('/webhook/', function (req, res) {
 					} else if (text) {
 						// We received a text message
 						// Extract entities, intents, and traits
-						const client = new Wit({accessToken: WIT_TOKEN});
-						client.message(text, {})
-						.then((data) => {
-						console.log('Yay, got Wit.ai response: ' + JSON.stringify(data));
-						})
-						.catch(console.error);
-						
 						const { entities, intents, traits } = event.message.nlp; 
 						if (entities) {
 							console.log("entities: " + JSON.stringify(entities));
@@ -156,7 +149,12 @@ app.post('/webhook/', function (req, res) {
 	}
 });
 
-
+const client = new Wit({accessToken: WIT_TO});
+client.message('what is the weather in London?', {})
+.then((data) => {
+  console.log('Yay, got Wit.ai response: ' + JSON.stringify(data));
+})
+.catch(console.error);
 
 /*
  * Verify that the callback came from Facebook. Using the App Secret from

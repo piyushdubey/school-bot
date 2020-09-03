@@ -124,7 +124,6 @@ app.post('/webhook/', function (req, res) {
 						console.log('Yay, got Wit.ai response: ' + JSON.stringify(data));
 						})
 						.catch(console.error);
-						
 						const { entities, intents, traits } = event.message.nlp; 
 						if (entities) {
 							console.log("entities: " + JSON.stringify(entities));
