@@ -1,4 +1,5 @@
 import { BOT_MESSAGES } from "./messages";
+import { threadId } from "worker_threads";
 
 interface EphemeralContext {
     greetings: boolean;
@@ -27,12 +28,6 @@ interface BotItem {
     itemType: string;
 }
 
-export interface BotAddItemAction extends BotItem {
-    type: "add_item";
-}
-
-export type BotAction = BotAddItemAction;
-
 interface BotSession {
     text?: string;
     voice?: ArrayBuffer;
@@ -40,76 +35,125 @@ interface BotSession {
     queryExpenses(interval: any): Promise<BotItem[]>;
 }
 
-
-function defaultContext(): BotContext {
-    return{
-        state: "init",
-        isActive: true,
-        studentName: "",
-        currentItem: undefined,
-        currentItemTime: undefined,
-        currentItemType: undefined,
-    };
-}
-
 class BotLogic {
     private messages: string [] = [];
-    private actions: BotAction[] = [];
-    private readonly states: { [name: string]: Array<[string, () => Promise<[string] | [string, string]>]> } = {
-        "init": [
-            ["greeting", async() => {
-                this.sayHi();
-                return ["main!"];
-            }],
-        ],
+    private readonly states: { [name: string]: () => Promise<[string]> } = {
+        //need to create general main for all methods to return to
+        "main": async() => {
+            this.say(BOT_MESSAGES["queryUser"].any());
+            return[""] //TODO: redirect to intent of user response
+        },
 
-        "main": [
-            ["add_item", async () => {
-                this.context.currentItem = undefined;
-                this.context.currentItemTime = undefined;
-                this.context.currentItemType = undefined;
-                return ["add_item!"];
-            }],
-        ],
+        "greeting": async() => {
+            this.sayHi();
+            return ["main"];
+        },
+        
+        "bye": async() => {
+            this.sayBye();
+            return ["main"];
+        },
 
-        "add_item": [
-            ["add_item", async () => {
-                if(this.ephemeral.item && !this.context.currentItem) {
-                    this.context.currentItem = this.ephemeral.item;
-                }
+        "priority_summary": async() => {
+            this.say(BOT_MESSAGES["prioritySummaryLoading"].any());
+            this.say(BOT_MESSAGES["prioritySummary"].any());
+            //TODO: database query of top priorities by time and display in a pretty way
+            return ["main"];
+        },
 
-                if(this.ephemeral.time && !this.context.currentItemTime) {
-                    this.context.currentItemTime = this.ephemeral.time;
-                } 
+        "priority_summary_type": async() => {
+            this.say(BOT_MESSAGES["prioritySummaryLoading"].any());
+            if (!this.context.currentItemType) {
+                return ["specify_item_type"]
+            }
+            //TODO: database query of top priorities by type and display in pretty way
+            //if no priorities BOT_MESSAGES.noPriority.any()
+            return ["main"];
+        },
 
-                if(this.ephemeral.type && !this.context.currentItemType) {
-                    this.context.currentItemType = this.ephemeral.type;
-                }
+        "item_time_logged": async() => {
+            if(this.ephemeral.item && !this.context.currentItem) {
+                this.context.currentItem = this.ephemeral.item;
+            }
 
-                // if(!this.context.currentExpenseItem) {
-                //     return ["specify_expense_item!"];
-                // }
+            if(this.ephemeral.time && !this.context.currentItemTime) {
+                this.context.currentItemTime = this.ephemeral.time;
+            } 
 
-                // if(!this.context.currentExpenseIncurredOn) {
-                //     return ["specify_expense_moment!"];
-                // }
+            if(!this.context.currentItem) {
+                return ["specify_item"];//need to create this method
+            }
 
-                // if(!this.context.currentExpenseValue) {
-                //     return ["specify_expense_value!"];
-                // }
+            if(!this.context.currentItemTime) {
+                return ["specify_item_log_time"];
+            }
+            //TODO: database write of the new log time
+            this.say(BOT_MESSAGES["itemTimeLogged"].any(time: this.context.currentItemTime, item: this.context.currentItem));
+        },
 
-                this.action({
-                    type: "add_item",
-                    item: this.context.currentItem,
-                    itemTime: this.context.currentItemTime,
-                    itemType: this.context.currentItemType,
-                });
+        "set_item_time": async () => {
+            this.ephemeral.time = this.context.currentItemTime;
+            if(!this.context.currentItemTime) {
+                return ["specify_item_time"];
+            }
+        },
+        "specify_item_log_time": async () => {
+            this.say(BOT_MESSAGES["specifyItemLogTime"].any());
+            //TODO : some sort of async function that gets the user's response message
+            this.ephemeral.time = this.context.currentItemTime;
+            return ["item_time_logged"];
+        },
 
-                this.say(BOT_MESSAGES.addItem.any());
+        "add_item": async () => {
+            if(this.ephemeral.item && !this.context.currentItem) {
+                this.context.currentItem = this.ephemeral.item;
+            }
 
-                return ["main", "expense_added"];
-            }],
-        ],
+            if(this.ephemeral.time && !this.context.currentItemTime) {
+                this.context.currentItemTime = this.ephemeral.time;
+            } 
+
+            if(this.ephemeral.type && !this.context.currentItemType) {
+                this.context.currentItemType = this.ephemeral.type;
+            }
+
+            if(!this.context.currentItemTime) {
+                return ["specify_item_time"];
+            }
+
+            if(!this.context.currentItemType) {
+                return ["specify_item_type"];
+            }
+
+            //TODO : some code to add the new item to the database using BotItem interface defined line 24
+
+            this.say(BOT_MESSAGES.addItem.any());
+
+            return ["expense_added"];
+        },
+
+        "specify_item_time": async () => {
+            this.say(BOT_MESSAGES["specifyItemTime"].any());
+            //TODO : some sort of async function that gets the user's response message
+            this.ephemeral.time = this.context.currentItemTime;
+            if(this.ephemeral.intent == "set_item_time"){
+                return ["set_item_time"];
+            } else if (this.ephemeral.intent == "add_item"){
+                return ["add_item"];
+            }
+        },
+
+        "specify_item_type": async () => {
+            this.say(BOT_MESSAGES["specifyItemType"].any());
+            //TODO : some sort of async function that gets the user's response message
+            this.ephemeral.type = this.context.currentItemType;
+            if(this.ephemeral.intent == "add_item"){
+                return ["add_item"];
+            }
+            else if(this.ephemeral.intent == "priority_summary_type"){
+                return ["priority_summary_type"];
+            }
+        }
     }
     constructor(
         private wit: any, 
@@ -120,15 +164,16 @@ class BotLogic {
         //
     }
 
-    private action(action: BotAction) {
-        this.actions.push(action);
-    }
-
     private say(message: string) {
         this.messages.push(message);
     }
 
     private sayHi() { 
-        this.say(BOT_MESSAGES.greeting.any());
+        //TODO: Once database implemented, can create personalized v generic greetings that use students name
+        this.say(BOT_MESSAGES["greeting"].any());
+    }
+
+    private sayBye() {
+        this.say(BOT_MESSAGES["bye"].any());
     }
 }
