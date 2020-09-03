@@ -38,20 +38,17 @@ const wit = new Wit({
 })
 
 // Wit message API
-const client = (clientMessage) => {
-	new Wit({accessToken: WIT_TOKEN});
-	client.message(clientMessage, {})
-		.then((data) => {
-		console.log('Yay, got Wit.ai response: ' + JSON.stringify(data));
-		})
-		.catch(console.error);
-} 
+// const client = (clientMessage) => {
+// 	new Wit({accessToken: WIT_TOKEN});
+// 	client.message(clientMessage, {})
+// 		.then((data) => {
+// 		console.log('Yay, got Wit.ai response: ' + JSON.stringify(data));
+// 		})
+// 		.catch(console.error);
+// } 
 
 // const {interactive} = require('node-wit');
 // interactive(client);
 
-// ngrok https 8445
-// use the ngrok url for callback url
 
-
-module.exports = { wit, client } // message 
+module.exports = { wit } // message 
