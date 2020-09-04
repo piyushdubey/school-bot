@@ -1,5 +1,5 @@
 import * as yaml from "yaml";
-
+//TODO: fix literally everything
 const RAW_MESSAGES = yaml.parse(`
 
     greeting:
@@ -8,10 +8,13 @@ const RAW_MESSAGES = yaml.parse(`
     bye:
         - Good work '{{name}}', until next time! 👋😃
 
+    prioritySummaryLoading:
+        -Finding your top priorities. . .
+
     prioritySummary:
         - Your upcoming items are: 
 
-    prioritySummaryByType:
+    prioritySummaryType:
         - Here are your upcoming '{{itemType}}':
     
     noPriority:
@@ -21,7 +24,7 @@ const RAW_MESSAGES = yaml.parse(`
         - Sounds good! I'll add that to the priority list. 
 
     specifyItemType:
-        - Is that task a project, lecture, or test?
+        - Do you want a project, lecture, or test?
 
     specifyItemLogTime:
         - How long did you work on that task?
@@ -32,7 +35,7 @@ const RAW_MESSAGES = yaml.parse(`
     itemTimeLogged:
         -Nice job! I logged '{{time}}' for the '{{item}}'
     
-    itemTimeSet:
+    setItemTime:
         -Sounds good! You now have '{{time}}' to work on '{{item}}'. Let's get to work!
     
     queryItemTime:
