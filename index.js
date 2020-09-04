@@ -4,7 +4,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const request = require('request')
 const fetch = require('node-fetch')
-const wit = require('./wit-client')
+const {Wit,log} = require('node-wit')
 const crypto = require('crypto')
 
 // Webserver parameters
@@ -28,6 +28,47 @@ crypto.randomBytes(8, (err, buff) => {
   console.log(`/webhook will accept the Verify Token "${FB_VERIFY_TOKEN}"`);
 });
 */
+
+// ----------- WIT code back here ----
+
+
+// Wit.ai parameters
+const WIT_TOKEN = process.env.WIT_TOKEN
+
+// Wit.ai bot specific code
+
+// This will contain all user sessions.
+// Each session has an entry:
+// sessionId -> {fbid: facebookUserId, context: sessionState}
+const sessions = {}
+
+const findOrCreateSession = (fbid) => {
+	let sessionId;
+
+	// Check if session already exists for user fbid
+	Object.keys(sessions).forEach(k => {
+		if (session[k].fbid === fbid) {
+			sessionId = k;
+		}
+	});
+
+	if (!sessionId) {
+		// No session found for user fbid, let's create one
+		sessionId = new Date().toISOString();
+		sessions[sessionId] = {fbid: fbid, context: {}};
+	}
+	return sessionId;
+}
+
+// Setting up wit.ai bot
+
+const wit = new Wit({
+	accessToken: WIT_TOKEN,
+	logger: new log.Logger(log.info)
+})
+
+
+
 
 // ---------------------------------------------------
 // Messenger API specific code
@@ -112,9 +153,10 @@ app.post('/webhook/', function (req, res) {
 						fbMessage(sender, 'Sorry, I can\'t process this message, please type your message!')
 						.catch(console.error);
 					} else if (text) {
+						wit.message(text).then(({entities, intents, traits}) => {
 						// We received a text message
 						// Extract entities, intents, and traits
-						const { entities, intents, traits } = event.message.nlp; 
+//						const { entities, intents, traits } = event.message.nlp; 
 						if (entities) {
 							console.log("entities: " + JSON.stringify(entities));
 						}
@@ -128,6 +170,7 @@ app.post('/webhook/', function (req, res) {
 						}
 						// Reply with a dummy message for now
 						fbMessage(sender, "We've received your message!!");
+					});
 					} else {
 						console.log('received event', JSON.stringify(event));
 					}
